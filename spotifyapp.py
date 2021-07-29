@@ -10,8 +10,8 @@ import pandas as pd
 
 try:
 
-    client_id = os.environ.get('client_id')
-    client_secret = os.environ.get('client_secret')
+    client_id = os.environ.get('SPOTIPY_CLIENT_ID')
+    client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
 
     sp = spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
@@ -110,7 +110,6 @@ try:
                 open('img/'+songs['id']+'.jpg', 'wb').write(r.content)
 
                 st.image(Image.open('img/'+songs['id']+'.jpg'), width=64)
-
 
         except NameError:
             st.error("This is another error")
