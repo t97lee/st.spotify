@@ -83,7 +83,7 @@ try:
                         perceived loudness, timbre, onset rate, and general entropy.
 
             **Liveness**: Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. 
-                        "A value above 0.8 provides strong likelihood that the track is live.
+                        A value above 0.8 provides strong likelihood that the track is live.
 
             **Speechiness**: Detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), 
                         the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 
