@@ -37,7 +37,7 @@ try:
         track_album = search['tracks']['items'][0]['album']['name']
         track_image = search['tracks']['items'][0]['album']['images'][1]['url']
     except IndexError:
-        st.error("This error is likely due to the API being unable to find the song. Perhaps try to retype it using the song title followed by artist (e.g. Dragonball Durag Thundercat)")
+        st.error("This error is likely due to the API being unable to find the song. Perhaps try to retype it using the song title followed by artist without any hyphens (e.g. In my Blood Shawn Mendes)")
 
     r = requests.get(track_image)
     open('img/'+track_id+'.jpg', 'wb').write(r.content)
