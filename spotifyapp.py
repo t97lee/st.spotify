@@ -5,19 +5,20 @@ import os
 from spotipy.oauth2 import SpotifyClientCredentials
 from PIL import Image
 import requests
-import matplotlib.pyplot as plt #this is not needed? 
 import pandas as pd 
 
 try:
 
-    client_id = os.environ.get('SPOTIPY_CLIENT_ID')
-    client_secret = os.environ.get('SPOTIPY_CLIENT_SECRET')
+    SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
+    SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
 
     sp = spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(
-        client_id = client_id, 
-        client_secret = client_secret
-        ))
+        client_id = SPOTIPY_CLIENT_ID, 
+        client_secret = SPOTIPY_CLIENT_SECRET
+        )
+    )
+        
     '''
     # Spotify Song Analyser :notes: :saxophone:
 
@@ -25,7 +26,7 @@ try:
 
     Data is fetched from the Python library [*Spotipy*](https://spotipy.readthedocs.io/en/2.18.0/) which is based off the 
     [Spotify Web API.](https://developer.spotify.com/documentation/web-api/)
-    The data is then parsed using [Pandas](https://pandas.pydata.org/) and graphed using [matplotlib](https://matplotlib.org/) pyplot. 
+    The data is then put into a [Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) and graphed using [Pandas Chart Visualization](https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html). 
 
     '''
     song = st.text_input("Enter a song title", value="What's the Use Mac Miller")
@@ -40,7 +41,7 @@ try:
         st.error("This error is likely due to the API being unable to find the song. Perhaps try to retype it using the song title followed by artist without any hyphens (e.g. In my Blood Shawn Mendes)")
 
     r = requests.get(track_image)
-    open('img/'+track_id+'.jpg', 'wb').write(r.content)
+    open('img/'+track_id+'.jpg', 'w+b').write(r.content)
 
     image = Image.open('img/'+track_id+'.jpg')
     st.sidebar.image(image, caption=track_album,
@@ -73,12 +74,12 @@ try:
         if box: 
 
             '''
-            **Acousticness**: A confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.
+            **Acousticness**: A measure of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.
             
             **Danceability**: Describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. 
                         A value of 0.0 is least danceable and 1.0 is most danceable.
 
-            **Energy**: Measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. 
+            **Energy**: A perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. 
                         For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, 
                         perceived loudness, timbre, onset rate, and general entropy.
 
@@ -96,27 +97,23 @@ try:
             '''
 
     else: 
-
         st.write("Reccommendations")
 
-        try:
-            rr = sp.recommendations(seed_artists=None, seed_tracks=[track_id], seed_genres=[], limit=10)
-        
-            for songs in rr['tracks']:
-                st.write(f"\"{songs['name']}\" - {songs['artists'][0]['name']}")
+        recco = sp.recommendations(seed_artists=None, seed_tracks=[track_id], seed_genres=[], limit=10)
+    
+        for songs in recco['tracks']:
 
-                r = requests.get(songs['album']['images'][2]['url'])
+            st.write(f"\"{songs['name']}\" - {songs['artists'][0]['name']}")
 
-                open('img/'+songs['id']+'.jpg', 'wb').write(r.content)
+            img = requests.get(songs['album']['images'][2]['url'])
 
-                st.image(Image.open('img/'+songs['id']+'.jpg'), width=64)
+            open('img/'+songs['id']+'.jpg', 'w+b').write(img.content)
 
-        except NameError:
-            st.error("This is another error")
+            st.image(Image.open('img/'+songs['id']+'.jpg'))
 
     '''
     ### Remarks:
-    - There are times where the API just cannot find songs and you will have to be either more specific in the search or to search using specific keywords (e.g. artist name and or album).
+    - There are times where the API just cannot find songs and you will have to more specific in the search (e.g. artist name and or album).
         - For example, searching for 'The 1975 Robbers live at the O2' yields no results but 'Robbers The 1975 DH00278' will (as DH00278 is the album).
     - There are also instances where inputting a search will yield the wrong version of the song 
         - For example, 'Shawn Mendes In my Blood' yields an insrumental vesion by Vox Freaks while searching for 'In my Blood Shawn Mendes' yields the correct version.
