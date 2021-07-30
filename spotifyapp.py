@@ -67,7 +67,7 @@ try:
         plot.set_ylabel('Features')
         plot.set_title(f'Spotify Song Feature - {song}')
         plot.invert_yaxis()
-        st.pyplot(plot.figure,use_column_width=True) #https://github.com/streamlit/streamlit/issues/796
+        st.pyplot(plot.figure) #https://github.com/streamlit/streamlit/issues/796
 
         #checkbox
         box = st.checkbox("What do these mean?")
