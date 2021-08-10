@@ -1,4 +1,3 @@
-from enum import auto
 import spotipy
 import streamlit as st 
 import numpy as np
