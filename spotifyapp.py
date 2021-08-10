@@ -110,7 +110,7 @@ with stats:
             '''
 
     else: 
-        st.subheader("Reccommendations")
+        st.subheader(f"Recommendations based off {track_name} by {track_artist_name}")
 
         recco = sp.recommendations(seed_artists=None, seed_tracks=[track_id], seed_genres=[], limit=10)
     
