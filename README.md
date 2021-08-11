@@ -15,4 +15,3 @@ Another picture below shows the recommendations from the application for the sam
 
 ### Things to work on
 - Found in the issues of the repo. 
-- Typo in the image that I will fix soon 
