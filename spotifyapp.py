@@ -129,5 +129,5 @@ with stats:
 - For the recommendations portion of the app, some songs that are either new or low on listens will not load recommendations.
 
 ### Thank you for viewing! :grinning: 
-#### Created by [Thomas Lee](https://thomsmd.ca). View on Github [here.](https://github.com/thomaslee01/st.spotify)
+#### Created by [Thomas Lee](https://thomsmd.ca). View on GitHub [here.](https://github.com/thomaslee01/st.spotify)
 '''
