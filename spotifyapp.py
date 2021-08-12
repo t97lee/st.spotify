@@ -8,7 +8,7 @@ import requests
 import pandas as pd 
 
 st.set_page_config(
-    page_title="Spotify Song Analyser",
+    page_title="Spotify Song Analyzer",
     page_icon="random",
     layout="wide"
 )
@@ -26,7 +26,7 @@ sp = spotipy.Spotify(
 )
     
 '''
-# Spotify Song Analyser :notes: :saxophone:
+# Spotify Song Analyzer :notes: :saxophone:
 
 Input a song title & the app will return the features of the song as well as recommendations.
 
@@ -48,7 +48,7 @@ with image:
         track_artist_name = search['tracks']['items'][0]['artists'][0]['name'] #gets the artist for the track 
         track_name = search['tracks']['items'][0]['name'] #gets the track name 
 
-        button = st.selectbox('Display', ('Analyze', 'Reccommend'))
+        button = st.selectbox('Choose an option', ('Analyze', 'Reccommend'))
         url_to_song = "https://open.spotify.com/track/" + track_id
         st.write(f"Stream {track_name} by {track_artist_name}: {url_to_song}") #change to cleaner URL?
         r = requests.get(track_image)
