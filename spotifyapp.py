@@ -75,7 +75,7 @@ with stats:
         plot = data_feat.plot.barh(xticks=ticks,legend=False) #using Pandas plotting 
         plot.set_xlabel('Scale')
         plot.set_ylabel('Features')
-        plot.set_title(f'Spotify Song Analysis for {track_name} by {track_artist_name}')
+        plot.set_title(f'Analysis for {track_name} by {track_artist_name}')
         plot.invert_yaxis()
         st.pyplot(plot.figure) #https://github.com/streamlit/streamlit/issues/796
 
