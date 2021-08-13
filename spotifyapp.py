@@ -7,6 +7,7 @@ from PIL import Image
 import requests
 import pandas as pd 
 from lyricsgenius import Genius
+import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="Spotify Song Analyzer",
