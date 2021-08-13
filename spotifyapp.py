@@ -6,6 +6,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from PIL import Image
 import requests
 import pandas as pd 
+from lyricsgenius import Genius
 
 st.set_page_config(
     page_title="Spotify Song Analyzer",
@@ -13,15 +14,18 @@ st.set_page_config(
     layout="wide"
 )
 
+#Genius API
+genius_token = os.environ.get('genius_token')
+genius = Genius(genius_token)
 
-
+#Spotify API
 SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
 
 sp = spotipy.Spotify(
-    auth_manager=SpotifyClientCredentials(
-    client_id = SPOTIPY_CLIENT_ID, 
-    client_secret = SPOTIPY_CLIENT_SECRET
+    auth_manager=SpotifyClientCredentials (
+        client_id = SPOTIPY_CLIENT_ID, 
+        client_secret = SPOTIPY_CLIENT_SECRET
     )
 )
     
@@ -35,57 +39,103 @@ Data is fetched from the Python library [*Spotipy*](https://spotipy.readthedocs.
 The data is then put into a [Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) and graphed using [Pandas Chart Visualization](https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html). 
 
 '''
+song = st.text_input("Enter a song title", value="What's the Use Mac Miller")
+search = sp.search(q='track:'+song, type='track')
 
-image, stats = st.beta_columns(2)
+class GetTrackInfo:
+    def __init__(self, search):
+        self.search = search
+
+    def track_id(self):
+        track_id = search['tracks']['items'][0]['id'] #gets track id 
+        return track_id
+    
+    def track_album(self):
+        track_album = search['tracks']['items'][0]['album']['name'] #gets track album name
+        return track_album
+
+    def track_image(self):
+        track_image = search['tracks']['items'][0]['album']['images'][0]['url'] #gets track image URL
+        return track_image
+    
+    def track_artist_name(self):
+        track_artist_name = search['tracks']['items'][0]['artists'][0]['name'] #gets the artist for the track 
+        return track_artist_name
+
+    def track_name(self):
+        track_name = search['tracks']['items'][0]['name'] #gets the track name 
+        return track_name
+
+    def track_preview(self):
+        track_preview = search['tracks']['items'][0]['preview_url']
+        return track_preview
+
+songs = GetTrackInfo(song)
+
+def get_lyrics(song):
+    song_lyrics = genius.search_song(songs.track_name(), songs.track_artist_name())
+    st.text(song_lyrics.lyrics)
+###
+
+def url(song):
+    url_to_song = "https://open.spotify.com/track/" + songs.track_id()
+    st.write(f"Stream {songs.track_name()} by {songs.track_artist_name()}: {url_to_song}") #change to cleaner URL?
+
+image, stats = st.columns(2)
 
 with image:
-    song = st.text_input("Enter a song title", value="What's the Use Mac Miller")
-    search = sp.search(q='track:'+song, type='track')
     try:
-        track_id = search['tracks']['items'][0]['id'] #gets track id 
-        track_album = search['tracks']['items'][0]['album']['name'] #gets track album name
-        track_image = search['tracks']['items'][0]['album']['images'][0]['url'] #gets track image URL
-        track_artist_name = search['tracks']['items'][0]['artists'][0]['name'] #gets the artist for the track 
-        track_name = search['tracks']['items'][0]['name'] #gets the track name 
-
-        button = st.selectbox('Choose an option', ('Analyze', 'Reccommend'))
-        url_to_song = "https://open.spotify.com/track/" + track_id
-        st.write(f"Stream {track_name} by {track_artist_name}: {url_to_song}") #change to cleaner URL?
-        r = requests.get(track_image)
-        open('img/'+track_id+'.jpg', 'w+b').write(r.content)
-        image = Image.open('img/'+track_id+'.jpg')
-        st.image(image, caption=f"{track_artist_name} - {track_album}",
+        url(song)
+        r = requests.get(songs.track_image())
+        open('img/'+songs.track_id()+'.jpg', 'w+b').write(r.content)
+        image_album = Image.open('img/'+songs.track_id()+'.jpg')
+        st.image(image_album, caption=f"{songs.track_artist_name()} - {songs.track_album()}",
                 use_column_width='auto')
 
     except IndexError or NameError:
-        st.error("This error is likely due to the API being unable to find the song. Perhaps try to retype it using the song title followed by artist without any hyphens (e.g. In my Blood Shawn Mendes)")
-    
+        st.error(
+            "This error is likely due to the API being unable to find the song. Perhaps try to retype it using the song title followed by artist without any hyphens (e.g. In my Blood Shawn Mendes)"
+        )
+
 with stats:
+    button = st.selectbox('Choose an option', ('Analyze', 'Recommendations'))
     if button == "Analyze":
         #st.pyplot(fig=None)
-        feat = sp.audio_features(tracks=[track_id])
+        feat = sp.audio_features(tracks=[songs.track_id()])
         features = feat[0]
         p = pd.Series(features).to_frame()
         data_feat = p.loc[['acousticness', 'danceability', 'energy', 'liveness', 'speechiness', 'valence',]]
         bpm = p.loc[['tempo']]
-        f = bpm.values[0]
-        s = f.item()
+        values = bpm.values[0]
+        bpms = values.item()
         ticks = np.linspace(0,1,11)
 
         plot = data_feat.plot.barh(xticks=ticks,legend=False) #using Pandas plotting 
         plot.set_xlabel('Scale')
         plot.set_ylabel('Features')
-        plot.set_title(f'Analysis for {track_name} by {track_artist_name}')
+        plot.set_title(f'Analysis for {songs.track_name()} by {songs.track_artist_name()}')
         plot.invert_yaxis()
         st.pyplot(plot.figure) #https://github.com/streamlit/streamlit/issues/796
+        st.subheader(f"BPM (Beats Per Minute): {bpms}")
 
-        st.subheader(f"BPM (Beats Per Minute): {s}")
-        #checkbox
-        st.empty()
-        box = st.checkbox("What do these mean?")
+        ## checkboxes
+        preview_box = st.checkbox("Click to preview the song")
+        lyrics_box = st.checkbox(f"Click to show lyrics to {songs.track_name()} by {songs.track_artist_name()}")
+        box = st.checkbox("What do these metrics mean?")
+    
+        if preview_box:
+            st.warning("Warning: some audio previews may be very loud and audio volume will reset if the page is refreshed")
+            st.audio(songs.track_preview(),format='audio/wav')
 
-        if box: 
+        if lyrics_box:
+            st.subheader(f"Lyrics for {songs.track_name()} by {songs.track_artist_name()}")
+            try:
+                get_lyrics(song)
+            except AttributeError:
+                st.error(f"Unfortunately, the Genius API could not find lyrics for the song {songs.track_name()} by {songs.track_artist_name()} - I am working on fixing this")
 
+        if box:
+            st.subheader("Attribute Definitions")
             '''
             **Acousticness**: A measure of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.
             
@@ -96,7 +146,7 @@ with stats:
                         For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, 
                         perceived loudness, timbre, onset rate, and general entropy.
 
-            **Liveness**: Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. 
+            **Liveness**: Detects the presence of an audience in the rding. Higher liveness values represent an increased probability that the track was performed live. 
                         A value above 0.8 provides strong likelihood that the track is live.
 
             **Speechiness**: Detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), 
@@ -110,15 +160,15 @@ with stats:
             '''
 
     else: 
-        st.subheader(f"Recommendations based off {track_name} by {track_artist_name}")
+        st.subheader(f"Recommendations based off {songs.track_name()} by {songs.track_artist_name()}")
 
-        recco = sp.recommendations(seed_artists=None, seed_tracks=[track_id], seed_genres=[], limit=10)
+        reco = sp.recommendations(seed_artists=None, seed_tracks=[songs.track_id()], seed_genres=[], limit=10)
     
-        for songs in recco['tracks']:
-            st.write(f"\"{songs['name']}\" - {songs['artists'][0]['name']}")
-            image_reco = requests.get(songs['album']['images'][2]['url'])
-            open('img/'+songs['id']+'.jpg', 'w+b').write(image_reco.content)
-            st.image(Image.open('img/'+songs['id']+'.jpg'))
+        for i in reco['tracks']:
+            st.write(f"\"{i['name']}\" - {i['artists'][0]['name']}")
+            image_reco = requests.get(i['album']['images'][2]['url'])
+            open('img/'+i['id']+'.jpg', 'w+b').write(image_reco.content)
+            st.image(Image.open('img/'+i['id']+'.jpg'))
 
 '''
 ### Remarks:
@@ -127,7 +177,8 @@ with stats:
 - There are also instances where inputting a search will yield the wrong version of the song. 
     - For example, 'Shawn Mendes In my Blood' yields an insrumental vesion by Vox Freaks while searching for 'In my Blood Shawn Mendes' yields the correct version.
 - For the recommendations portion of the app, some songs that are either new or low on listens will not load recommendations.
-
+- Lyrics of the songs are found via the LyricsGenius Python library which sometimes cannot find the correct lyrics to songs due to the way I have it set up. 
+I am working on fixing this. 
 ### Thank you for viewing! :grinning: 
 #### Created by [Thomas Lee](https://thomsmd.ca). View on GitHub [here.](https://github.com/thomaslee01/st.spotify)
 '''
