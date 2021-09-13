@@ -15,3 +15,4 @@ Another picture below shows the recommendations from the application for the sam
 
 ### Things to work on
 - Found in the issues of the repo. 
+- Upgrade pillow>=8.3.2
