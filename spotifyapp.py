@@ -31,7 +31,7 @@ sp = spotipy.Spotify(
 )
     
 '''
-# Spotify Song Analyzer :notes: :saxophone:
+# Spotify Song Analyzer
 
 Input a song title & the app will return the features of the song as well as recommendations.
 
