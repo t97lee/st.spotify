@@ -13,6 +13,3 @@ Below shows a plot of features that What's The Use? by Mac Miller has based off 
 Another picture below shows the recommendations from the application for the same song.
 ![recommendations](https://github.com/thomaslee01/st.spotify/blob/main/img/recommendations.jpg?raw=true)
 
-### Things to work on
-- Found in the issues of the repo. 
-- Upgrade pillow>=8.3.2
